@@ -82,3 +82,7 @@ Sesuaikan konfigurasi kredensial MySQL (`DATABASE_HOST`, `DATABASE_USER`, `DATAB
   - **Body**: `{ "name": "Ami", "email": "ami915@gmail.com", "password": "rahasia" }`
   - **Success**: `{ "data": "OK" }`
   - **Error (Duplicate)**: `{ "error": "Email sudah terdaftar" }`
+- `POST /api/users/login` : Autentikasi pengguna & pembuatan token session UUID
+  - **Body**: `{ "email": "ami915@gmail.com", "password": "rahasia" }`
+  - **Success**: `{ "data": "<token-uuid>" }`
+  - **Error**: `{ "error": "Email atau password salah" }`
