@@ -21,6 +21,17 @@ export type LoginResult =
   | { success: true; data: string }
   | { success: false; error: string };
 
+export interface CurrentUserOutput {
+  id: number;
+  name: string;
+  email: string;
+  created_at: string | Date;
+}
+
+export type CurrentUserResult =
+  | { success: true; data: CurrentUserOutput }
+  | { success: false; error: string };
+
 export class UsersService {
   static async register(input: RegisterUserInput): Promise<RegisterResult> {
     // 1. Cek apakah email sudah terdaftar
@@ -95,6 +106,33 @@ export class UsersService {
     return {
       success: true,
       data: token,
+    };
+  }
+
+  static async getCurrentUser(token: string): Promise<CurrentUserResult> {
+    // Cari user berdasarkan session token
+    const [user] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        created_at: users.createdAt,
+      })
+      .from(sessions)
+      .innerJoin(users, eq(sessions.userId, users.id))
+      .where(eq(sessions.token, token))
+      .limit(1);
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+
+    return {
+      success: true,
+      data: user,
     };
   }
 }

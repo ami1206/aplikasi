@@ -2,31 +2,27 @@ buatkan issue.md, yang berisi perencanaan untuk nanti diimplementasikan oleh jun
 
 isi dari perencanaannya sebagai berikut:
 
-buat tabel sessions :
-id integer auto increment
-token varchar 255 not null (isinya UUID untuk token user yang login)
-user_id integer (FK ke tabel users)
-created_at timestamp default current_timestamp
+buatkan API untuk get user saat ini yang sedang login
 
-buatkan API untuk registrasi login user
+Endpoint : GET/api/users/current
 
-Endpoint : POST/api/users/login
+Headers :
+- Authorization : Bearer <token> (token adalah token yang ada di tabel users)
 
-Request Body :
+Request Body (Succees):
 
 {
-    "email" : "ami915@gmail.com"
-    "password" : "rahasia"
-}
-
-Respons Body (Succees) :
-{
-    "data" : "token"
+    "data" : {
+        "id" : 1,
+        "name" : "ami",
+        "email" : "ami915@gmail.com",
+        "created_at" : "timestamp"
+    }
 }
 
 Respons Body (error) :
 {
-    "error" : "Email atau password salah"
+    "error" : "Unauthorized"
 }
 
 Struktur folder di dalam src 
