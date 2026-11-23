@@ -17,9 +17,9 @@ Project backend berbasis **Bun**, **ElysiaJS**, **Drizzle ORM**, dan **MySQL**.
 │   ├── db/              # Setup database & Drizzle
 │   │   ├── schema/      # Skema tabel database (Users, dsb.)
 │   │   └── index.ts     # Inisialisasi koneksi MySQL pool & Drizzle
-│   ├── modules/         # Route handlers & controller per fitur
-│   │   ├── health/      # Health check endpoint
-│   │   └── users/       # CRUD endpoints pengguna
+│   ├── routes/          # Routing ElysiaJS (users-route.ts, dsb.)
+│   ├── services/        # Business logic aplikasi (users-service.ts, dsb.)
+│   ├── modules/         # Modul pendukung (health check, dsb.)
 │   └── index.ts         # Entry point aplikasi & middleware
 ├── drizzle/             # File migrasi SQL hasil generate Drizzle
 ├── drizzle.config.ts    # Konfigurasi Drizzle Kit
@@ -58,10 +58,14 @@ Sesuaikan konfigurasi kredensial MySQL (`DATABASE_HOST`, `DATABASE_USER`, `DATAB
   bun run db:studio
   ```
 
-### 4. Menjalankan Server
+### 4. Menjalankan Server & Testing
 - **Development (Hot Reload)**:
   ```bash
   bun run dev
+  ```
+- **Menjalankan Unit Test**:
+  ```bash
+  bun test
   ```
 - **Production**:
   ```bash
@@ -74,6 +78,7 @@ Sesuaikan konfigurasi kredensial MySQL (`DATABASE_HOST`, `DATABASE_USER`, `DATAB
 - `GET /` : Informasi status API dasar
 - `GET /health` : Status kesehatan server & status koneksi database
 - `GET /swagger` : Dokumentasi interaktif Swagger / OpenAPI
-- `GET /users` : Daftar semua user
-- `POST /users` : Membuat user baru (`{ "name": string, "email": string }`)
-- `GET /users/:id` : Detail user berdasarkan ID
+- `POST /api/users` : Registrasi akun pengguna baru (password otomatis di-hash dengan bcrypt)
+  - **Body**: `{ "name": "Ami", "email": "ami915@gmail.com", "password": "rahasia" }`
+  - **Success**: `{ "data": "OK" }`
+  - **Error (Duplicate)**: `{ "error": "Email sudah terdaftar" }`
