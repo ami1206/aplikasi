@@ -3,7 +3,7 @@ import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { config } from "./config/env";
 import { healthRoutes } from "./modules/health";
-import { userRoutes } from "./modules/users";
+import { usersRoute } from "./routes/users-route";
 
 const app = new Elysia()
   .use(cors())
@@ -17,7 +17,7 @@ const app = new Elysia()
         },
         tags: [
           { name: "System", description: "System and health check endpoints" },
-          { name: "Users", description: "User management endpoints" },
+          { name: "Users", description: "User management and registration endpoints" },
         ],
       },
       path: "/swagger",
@@ -30,18 +30,20 @@ const app = new Elysia()
     health: "/health",
   }))
   .use(healthRoutes)
-  .use(userRoutes)
+  .use(usersRoute)
   .onError(({ code, error, set }) => {
     if (code === "NOT_FOUND") {
       set.status = 404;
-      return { success: false, message: "Route not found" };
+      return { error: "Route not found" };
     }
     if (code === "VALIDATION") {
-      set.status = 400;
-      return { success: false, message: "Validation error", error: error.message };
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
     set.status = 500;
-    return { success: false, message: "Internal server error", error: error.message };
+    return { error: error.message || "Internal server error" };
   })
   .listen(config.port);
 
