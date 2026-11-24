@@ -90,3 +90,7 @@ Sesuaikan konfigurasi kredensial MySQL (`DATABASE_HOST`, `DATABASE_USER`, `DATAB
   - **Header**: `Authorization: Bearer <token>`
   - **Success**: `{ "data": { "id": 1, "name": "ami", "email": "ami915@gmail.com", "created_at": "timestamp" } }`
   - **Error**: `{ "error": "Unauthorized" }`
+- `DELETE /api/users/logout` : Logout pengguna dan menghapus sesi token dari database
+  - **Header**: `Authorization: Bearer <token>`
+  - **Success**: `{ "data": "OK" }`
+  - **Error**: `{ "error": "Unauthorized" }`
