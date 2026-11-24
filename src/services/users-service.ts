@@ -32,6 +32,10 @@ export type CurrentUserResult =
   | { success: true; data: CurrentUserOutput }
   | { success: false; error: string };
 
+export type LogoutResult =
+  | { success: true; data: "OK" }
+  | { success: false; error: string };
+
 export class UsersService {
   static async register(input: RegisterUserInput): Promise<RegisterResult> {
     // 1. Cek apakah email sudah terdaftar
@@ -133,6 +137,30 @@ export class UsersService {
     return {
       success: true,
       data: user,
+    };
+  }
+
+  static async logout(token: string): Promise<LogoutResult> {
+    // 1. Cek apakah session ada di database
+    const [session] = await db
+      .select({ id: sessions.id })
+      .from(sessions)
+      .where(eq(sessions.token, token))
+      .limit(1);
+
+    if (!session) {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+
+    // 2. Hapus data session dari database
+    await db.delete(sessions).where(eq(sessions.token, token));
+
+    return {
+      success: true,
+      data: "OK",
     };
   }
 }

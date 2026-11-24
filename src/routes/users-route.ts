@@ -130,4 +130,52 @@ export const usersRoute = new Elysia({ prefix: "/api/users" })
         description: "Mengambil data profil user saat ini berdasarkan Bearer Token session",
       },
     }
+  )
+  .delete(
+    "/logout",
+    async ({ headers, set }) => {
+      const authHeader = headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        set.status = 401;
+        return {
+          error: "Unauthorized",
+        };
+      }
+
+      const token = authHeader.substring(7).trim();
+      if (!token) {
+        set.status = 401;
+        return {
+          error: "Unauthorized",
+        };
+      }
+
+      try {
+        const result = await UsersService.logout(token);
+
+        if (!result.success) {
+          set.status = 401;
+          return {
+            error: result.error,
+          };
+        }
+
+        set.status = 200;
+        return {
+          data: result.data,
+        };
+      } catch (err: any) {
+        set.status = 500;
+        return {
+          error: err.message || "Internal server error",
+        };
+      }
+    },
+    {
+      detail: {
+        tags: ["Users"],
+        summary: "Logout User",
+        description: "Menghapus sesi pengguna aktif berdasarkan Bearer Token",
+      },
+    }
   );
