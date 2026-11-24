@@ -141,22 +141,17 @@ export class UsersService {
   }
 
   static async logout(token: string): Promise<LogoutResult> {
-    // 1. Cek apakah session ada di database
-    const [session] = await db
-      .select({ id: sessions.id })
-      .from(sessions)
-      .where(eq(sessions.token, token))
-      .limit(1);
+    // 1 query langsung delete session dan cek affectedRows
+    const [result] = await db
+      .delete(sessions)
+      .where(eq(sessions.token, token));
 
-    if (!session) {
+    if (!result || (result as any).affectedRows === 0) {
       return {
         success: false,
         error: "Unauthorized",
       };
     }
-
-    // 2. Hapus data session dari database
-    await db.delete(sessions).where(eq(sessions.token, token));
 
     return {
       success: true,

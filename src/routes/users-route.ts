@@ -1,6 +1,27 @@
 import { Elysia, t } from "elysia";
 import { UsersService } from "../services/users-service";
 
+// Helper untuk mengekstrak Bearer token dari header Authorization
+const getBearerToken = (authHeader?: string): string | null => {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  const token = authHeader.substring(7).trim();
+  return token.length > 0 ? token : null;
+};
+
+// Definisi parameter header Authorization untuk dokumentasi Swagger
+const authHeaderParameter = {
+  in: "header" as const,
+  name: "authorization",
+  required: true,
+  schema: {
+    type: "string",
+    example: "Bearer <token>",
+  },
+  description: "Bearer Token sesi pengguna",
+};
+
 export const usersRoute = new Elysia({ prefix: "/api/users" })
   .onError(({ code, error }) => {
     if (code === "VALIDATION") {
@@ -86,15 +107,7 @@ export const usersRoute = new Elysia({ prefix: "/api/users" })
   .get(
     "/current",
     async ({ headers, set }) => {
-      const authHeader = headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        set.status = 401;
-        return {
-          error: "Unauthorized",
-        };
-      }
-
-      const token = authHeader.substring(7).trim();
+      const token = getBearerToken(headers.authorization);
       if (!token) {
         set.status = 401;
         return {
@@ -128,21 +141,14 @@ export const usersRoute = new Elysia({ prefix: "/api/users" })
         tags: ["Users"],
         summary: "Get Current User",
         description: "Mengambil data profil user saat ini berdasarkan Bearer Token session",
+        parameters: [authHeaderParameter],
       },
     }
   )
   .delete(
     "/logout",
     async ({ headers, set }) => {
-      const authHeader = headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        set.status = 401;
-        return {
-          error: "Unauthorized",
-        };
-      }
-
-      const token = authHeader.substring(7).trim();
+      const token = getBearerToken(headers.authorization);
       if (!token) {
         set.status = 401;
         return {
@@ -176,6 +182,7 @@ export const usersRoute = new Elysia({ prefix: "/api/users" })
         tags: ["Users"],
         summary: "Logout User",
         description: "Menghapus sesi pengguna aktif berdasarkan Bearer Token",
+        parameters: [authHeaderParameter],
       },
     }
   );
