@@ -1,0 +1,18 @@
+Implementasikan Milestone 2 untuk fitur "Master Admin / User" pada project "Warehouse Peci" di repository ini (Bun, ElysiaJS, Drizzle ORM, MySQL) dengan mengikuti pola layered architecture yang sudah ada pada project ini.
+
+Periksa terlebih dahulu implementasi modul users dan sessions yang sudah ada agar tidak merusak fitur registrasi, login, get current user, dan logout yang sudah berjalan.
+
+Cakupan Milestone 2 (Master Admin / User):
+1. Endpoint & Service Master Admin / User:
+   - Pastikan tersedia endpoint untuk mengambil daftar user/admin (misalnya GET /api/users) dan detail user berdasarkan ID bila diperlukan (misalnya GET /api/users/:id), serta tetap mempertahankan endpoint registrasi/tambah user (POST /api/users), login (POST /api/users/login), get current user (GET /api/users/current), dan logout yang sudah ada.
+   - Jika perlu kolom peran/role (misalnya admin/staff/user) atau field pendukung lain, rancang secara rapi dan aman dengan default yang jelas tanpa memecahkan skema/migrasi yang sudah ada (generate migrasi baru via `bun run db:generate` jika ada perubahan skema).
+   - Pada setiap respons data user/admin, pastikan `password` (hash) tidak pernah ikut dikembalikan.
+   - Terapkan validasi input dan batas panjang karakter yang jelas agar input kosong, format salah, atau data terlalu panjang mengembalikan respons error yang terstruktur (bukan raw SQL error).
+
+2. Unit Test (`test/`):
+   - Tambahkan atau perbarui unit test menggunakan `bun test` untuk mencakup daftar user/admin, detail user, validasi input/panjang karakter, serta memastikan alur registrasi/login/current user/logout tetap lulus.
+   - Bersihkan data uji pada tabel terkait sebelum/sesudah pengujian agar hasil test konsisten.
+
+3. Alur Git & Pull Request:
+   - Pastikan posisi branch terbaru dari `main`, lalu buat branch baru (misalnya `feature/milestone-2-master-admin-user`).
+   - Setelah selesai dan `bun test` lulus, lakukan `git commit`, `git push` ke origin, dan buat Pull Request ke `main` (menggunakan `gh pr create` bila tersedia) agar bisa saya review sebelum di-merge. Jangan kerjakan fitur transaksi (restock, retur, stockout) atau laporan yang masuk ke milestone berikutnya.
