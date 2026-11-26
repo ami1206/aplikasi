@@ -1,8 +1,8 @@
-import { mysqlTable, serial, varchar, timestamp, int } from "drizzle-orm/mysql-core";
+import { mysqlTable, int, varchar, timestamp } from "drizzle-orm/mysql-core";
 import { users } from "./users";
 
 export const sessions = mysqlTable("sessions", {
-  id: serial("id").primaryKey(),
+  id: int("id").autoincrement().primaryKey(),
   token: varchar("token", { length: 255 }).notNull().unique(),
   userId: int("user_id")
     .notNull()
