@@ -1,11 +1,12 @@
 import { db } from "../db";
 import { users, sessions } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, like, or } from "drizzle-orm";
 
 export interface RegisterUserInput {
   name: string;
   email: string;
   password: string;
+  role?: string;
 }
 
 export type RegisterResult =
@@ -21,10 +22,27 @@ export type LoginResult =
   | { success: true; data: string }
   | { success: false; error: string };
 
+export interface UserOutput {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  created_at: string | Date;
+}
+
+export type UserListResult =
+  | { success: true; data: UserOutput[] }
+  | { success: false; error: string };
+
+export type UserDetailResult =
+  | { success: true; data: UserOutput }
+  | { success: false; error: string };
+
 export interface CurrentUserOutput {
   id: number;
   name: string;
   email: string;
+  role?: string;
   created_at: string | Date;
 }
 
@@ -63,6 +81,7 @@ export class UsersService {
       name: input.name,
       email: input.email,
       password: hashedPassword,
+      role: input.role ?? "staff",
     });
 
     return {
@@ -113,6 +132,57 @@ export class UsersService {
     };
   }
 
+  static async getAll(search?: string): Promise<UserListResult> {
+    let query = db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        created_at: users.createdAt,
+      })
+      .from(users);
+
+    if (search) {
+      const pattern = `%${search}%`;
+      query = query.where(
+        or(like(users.name, pattern), like(users.email, pattern))
+      ) as typeof query;
+    }
+
+    const items = await query;
+    return {
+      success: true,
+      data: items,
+    };
+  }
+
+  static async getById(id: number): Promise<UserDetailResult> {
+    const [user] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        created_at: users.createdAt,
+      })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    if (!user) {
+      return {
+        success: false,
+        error: "User tidak ditemukan",
+      };
+    }
+
+    return {
+      success: true,
+      data: user,
+    };
+  }
+
   static async getCurrentUser(token: string): Promise<CurrentUserResult> {
     // Cari user berdasarkan session token
     const [user] = await db
@@ -120,6 +190,7 @@ export class UsersService {
         id: users.id,
         name: users.name,
         email: users.email,
+        role: users.role,
         created_at: users.createdAt,
       })
       .from(sessions)
