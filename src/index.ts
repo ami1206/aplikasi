@@ -6,6 +6,7 @@ import { healthRoutes } from "./modules/health";
 import { usersRoute } from "./routes/users-route";
 import { peciRoute } from "./routes/peci-route";
 import { supplierRoute } from "./routes/supplier-route";
+import { transactionRoute } from "./routes/transaction-route";
 
 const app = new Elysia()
   .use(cors())
@@ -22,6 +23,7 @@ const app = new Elysia()
           { name: "Users", description: "User management and registration endpoints" },
           { name: "Peci", description: "Master data peci endpoints" },
           { name: "Suppliers", description: "Master data supplier endpoints" },
+          { name: "Transactions", description: "Restock, stockout, and retur transaction endpoints" },
         ],
       },
       path: "/swagger",
@@ -37,6 +39,7 @@ const app = new Elysia()
   .use(usersRoute)
   .use(peciRoute)
   .use(supplierRoute)
+  .use(transactionRoute)
   .onError(({ code, error, set }) => {
     if (code === "NOT_FOUND") {
       set.status = 404;
