@@ -4,6 +4,8 @@ import { swagger } from "@elysiajs/swagger";
 import { config } from "./config/env";
 import { healthRoutes } from "./modules/health";
 import { usersRoute } from "./routes/users-route";
+import { peciRoute } from "./routes/peci-route";
+import { supplierRoute } from "./routes/supplier-route";
 
 const app = new Elysia()
   .use(cors())
@@ -18,6 +20,8 @@ const app = new Elysia()
         tags: [
           { name: "System", description: "System and health check endpoints" },
           { name: "Users", description: "User management and registration endpoints" },
+          { name: "Peci", description: "Master data peci endpoints" },
+          { name: "Suppliers", description: "Master data supplier endpoints" },
         ],
       },
       path: "/swagger",
@@ -31,6 +35,8 @@ const app = new Elysia()
   }))
   .use(healthRoutes)
   .use(usersRoute)
+  .use(peciRoute)
+  .use(supplierRoute)
   .onError(({ code, error, set }) => {
     if (code === "NOT_FOUND") {
       set.status = 404;
