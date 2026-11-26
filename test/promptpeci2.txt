@@ -1,18 +1,22 @@
-Implementasikan Milestone 2 untuk fitur "Master Admin / User" pada project "Warehouse Peci" di repository ini (Bun, ElysiaJS, Drizzle ORM, MySQL) dengan mengikuti pola layered architecture yang sudah ada pada project ini.
+Implementasikan fitur transaksi "Restock", "Retur", dan "Stockout" beserta pembaruan stok untuk aplikasi "Warehouse Peci" di repository ini (Bun, ElysiaJS, Drizzle ORM, MySQL) dengan mengikuti pola layered architecture yang sudah ada pada project ini.
 
-Periksa terlebih dahulu implementasi modul users dan sessions yang sudah ada agar tidak merusak fitur registrasi, login, get current user, dan logout yang sudah berjalan.
+Periksa terlebih dahulu skema tabel Master Peci / Barang dan Master Supplier yang sudah ada agar relasi foreign key dan pembaruan stok konsisten.
 
-Cakupan Milestone 2 (Master Admin / User):
-1. Endpoint & Service Master Admin / User:
-   - Pastikan tersedia endpoint untuk mengambil daftar user/admin (misalnya GET /api/users) dan detail user berdasarkan ID bila diperlukan (misalnya GET /api/users/:id), serta tetap mempertahankan endpoint registrasi/tambah user (POST /api/users), login (POST /api/users/login), get current user (GET /api/users/current), dan logout yang sudah ada.
-   - Jika perlu kolom peran/role (misalnya admin/staff/user) atau field pendukung lain, rancang secara rapi dan aman dengan default yang jelas tanpa memecahkan skema/migrasi yang sudah ada (generate migrasi baru via `bun run db:generate` jika ada perubahan skema).
-   - Pada setiap respons data user/admin, pastikan `password` (hash) tidak pernah ikut dikembalikan.
-   - Terapkan validasi input dan batas panjang karakter yang jelas agar input kosong, format salah, atau data terlalu panjang mengembalikan respons error yang terstruktur (bukan raw SQL error).
+Cakupan Implementasi Transaksi & Update Stok:
+1. Skema Database & Migrasi (di src/db/schema/ dan diekspor ke src/db/schema/index.ts):
+   - Buat tabel transaksi yang jelas dan terstruktur untuk mencatat riwayat transaksi beserta jumlah (`quantity`), tanggal/timestamp, catatan/keterangan, dan relasi ke tabel peci (serta relasi supplier untuk restock dan tipe retur untuk retur, sesuai kebutuhan data transaksi).
+   - Generate file migrasi Drizzle (`bun run db:generate`) dan pastikan skema dapat diterapkan ke database MySQL tanpa error.
 
-2. Unit Test (`test/`):
-   - Tambahkan atau perbarui unit test menggunakan `bun test` untuk mencakup daftar user/admin, detail user, validasi input/panjang karakter, serta memastikan alur registrasi/login/current user/logout tetap lulus.
-   - Bersihkan data uji pada tabel terkait sebelum/sesudah pengujian agar hasil test konsisten.
+2. Aturan Bisnis & Pembaruan Stok (di services/ dengan transaksi database yang aman):
+   - **Restock (barang masuk):** mencatat transaksi restock dan **menambah** jumlah stok peci terkait. Validasi `quantity > 0`, validasi ID peci (dan supplier bila disertakan) agar tidak melempar raw SQL error.
+   - **Stockout (barang keluar):** mencatat transaksi stockout dan **mengurangi** jumlah stok peci terkait. Validasi `quantity > 0`, validasi ID peci, dan **pastikan stok peci mencukupi** sebelum dikurangi agar stok tidak pernah menjadi negatif.
+   - **Retur (pengembalian barang):** mencatat transaksi retur dan **menyesuaikan** stok peci sesuai tipe retur yang dikirimkan (misalnya retur masuk menambah stok, sedangkan retur keluar/ke supplier mengurangi stok dengan validasi stok cukup). Validasi `quantity > 0`, tipe retur yang valid, dan ID peci.
+   - Gunakan transaksi database / atomic update agar pencatatan transaksi dan perubahan stok selalu konsisten (jika validasi gagal atau terjadi error di tengah proses, stok tidak berubah setengah-setengah).
 
-3. Alur Git & Pull Request:
-   - Pastikan posisi branch terbaru dari `main`, lalu buat branch baru (misalnya `feature/milestone-2-master-admin-user`).
-   - Setelah selesai dan `bun test` lulus, lakukan `git commit`, `git push` ke origin, dan buat Pull Request ke `main` (menggunakan `gh pr create` bila tersedia) agar bisa saya review sebelum di-merge. Jangan kerjakan fitur transaksi (restock, retur, stockout) atau laporan yang masuk ke milestone berikutnya.
+3. Route API & Validasi (di routes/ dan didaftarkan ke entry point aplikasi):
+   - Sediakan endpoint untuk memproses dan melihat daftar/detail transaksi Restock, Retur, dan Stockout (serta dokumentasi/Swagger bila sudah dipakai di project).
+   - Terapkan validasi input, tipe data, dan batas panjang string/catatan agar input tidak valid mengembalikan respons error yang terstruktur (bukan raw SQL error).
+
+4. Unit Test (`test/`) & Alur Git:
+   - Tambahkan unit test menggunakan `bun test` untuk menguji Restock (menambah stok), Stockout (mengurangi stok & menolak jika stok kurang), dan Retur (menyesuaikan stok sesuai tipe & validasi input), serta bersihkan data uji sebelum/sesudah test agar konsisten.
+   - Kerjakan di branch fitur baru dari `main` yang sudah di-update, pastikan `bun test` lulus, lalu lakukan commit, push ke origin, dan buat Pull Request ke `main` agar bisa saya review sebelum di-merge. Jangan kerjakan fitur laporan yang masuk ke tahap berikutnya.
